@@ -7,6 +7,7 @@ class MondayAPI
     private $APIV2_Token;
     private $API_Url     = "https://api.monday.com/v2/";
     private $debug       = false;
+    public $error        = '';
 
     const TYPE_QUERY    = 'query';
     const TYPE_MUTAT    = 'mutation';
@@ -39,19 +40,32 @@ class MondayAPI
 
     protected function request( $type = self::TYPE_QUERY, $request = null )
     {
-        $headers = [
-            'Content-Type: application/json',
-            'User-Agent: [Tblack-IT] GraphQL Client',
-            'Authorization: ' . $this->APIV2_Token->getToken()
-        ];
+        $this->error = '';
 
-        $data = @file_get_contents($this->API_Url, false, stream_context_create([
-            'http' => [
-                'method' => 'POST',
-                'header' => $headers,
-                'content' => $this->content($type, $request),
-            ]
-        ]));
+         set_error_handler(
+            function ($severity, $message, $file, $line) {
+                throw new \ErrorException($message, $severity, $severity, $file, $line);
+            }
+        );
+
+        try {
+            $headers = [
+                'Content-Type: application/json',
+                'User-Agent: [Tblack-IT] GraphQL Client',
+                'Authorization: ' . $this->APIV2_Token->getToken()
+            ];
+
+            $data = file_get_contents($this->API_Url, false, stream_context_create([
+                'http' => [
+                    'method' => 'POST',
+                    'header' => $headers,
+                    'content' => $this->content($type, $request),
+                ]
+            ]));
+        } catch (\Exception $e) {
+            $this->error = $e->getMessage();
+            return false;
+        }
 
         return $this->response( $data );
     }
@@ -65,8 +79,12 @@ class MondayAPI
 
         if( isset($json['data']) ){
             return $json['data'];
-        }else if( isset($json['errors']) && is_array($json['errors']) ){
-            return $json['errors'];
+        } else if( isset($json['error_code'])) {
+            $this->error = $json;
+            return false;
+        } else if( isset($json['errors'])) {
+            $this->error =  $json['errors'];
+            return false;
         }
 
         return false;
