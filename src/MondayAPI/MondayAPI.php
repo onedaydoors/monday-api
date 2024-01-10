@@ -12,7 +12,7 @@ class MondayAPI
     const TYPE_QUERY    = 'query';
     const TYPE_MUTAT    = 'mutation';
 
-    function __construct( Bool $debug = false )
+    function __construct( bool $debug = false )
     {
         $this->debug = $debug;
     }
