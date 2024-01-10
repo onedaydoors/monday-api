@@ -5,7 +5,7 @@ Monday.com API
 Monday API is available on [Packagist](https://packagist.org/packages/tblack-it/monday-api) (using semantic versioning), and installation via [Composer](https://getcomposer.org) is the recommended way to install Monday API. Just add this line to your `composer.json` file:
 
 ```json
-"tblack-it/monday-api": "~0.2"
+"onedaydoors/monday-api": "~0.2"
 ```
 
 or run
@@ -119,4 +119,9 @@ $items = $MondayBoard->customQuery( $query );
 
 # For Mutation
 $items = $MondayBoard->customMutation( $query );
+```
+
+To get the error message
+```php
+$error = $MondayBoard->error;
 ```
